@@ -1,5 +1,14 @@
+import logging
+
+from extract_pokemons import extract_endpoints
+from utils import setup_logging
+
 def main():
-    print("Hello from pokeapi-medallion-pipeline!")
+    setup_logging()
+
+    extract_endpoints()
+
+
 
 
 if __name__ == "__main__":
