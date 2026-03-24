@@ -7,5 +7,8 @@ requires-python = ">=3.12"
 dependencies = [
     "pandas>=2.2.0",
     "requests>=2.31.0",
-    "jupyterlab>=4.0.0"
+    "python-dotenv>=1.1.1",
+    "snowflake-sqlalchemy>=1.7.6",
+    "sqlalchemy>=2.0.43",
+    "pyarrow<19.0.0",
 ]
