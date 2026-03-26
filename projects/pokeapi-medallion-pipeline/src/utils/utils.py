@@ -1,6 +1,7 @@
 import logging
 import time
 import os
+import boto3
 
 from sqlalchemy import create_engine, text
 from sqlalchemy.exc import OperationalError, DBAPIError
@@ -12,31 +13,27 @@ load_dotenv()
 
 
 # =============================
-# Conexão com DW - Snowflake
+# Conexão com S3
 # =============================
 
-def connect_dw(retries=10, delay=60):
-    db_url = (
-        f"snowflake://{os.getenv('USER_DW')}:"
-        f"{os.getenv('PASSWORD_DW')}@"
-        f"{os.getenv('HOST_DW')}/"
-        f"{os.getenv('NAME_DW')}?"
-        f"warehouse={os.getenv('WAREHOUSE_DW')}"
+def connect_s3():
+    aws_access_key = os.getenv("AWS_ACCESS_KEY_ID")
+    aws_secret_key = os.getenv("AWS_SECRET_ACCESS_KEY")
+    region = os.getenv("AWS_DEFAULT_REGION")
+
+    if not aws_access_key or not aws_secret_key:
+        raise ValueError("Credenciais AWS não encontradas no .env")
+
+    s3 = boto3.client(
+        "s3",
+        aws_access_key_id=aws_access_key,
+        aws_secret_access_key=aws_secret_key,
+        region_name=region,
     )
 
-    for attempt in range(1, retries + 1):
-        try:
-            conn = create_engine(db_url)
-            with conn.connect() as sql:
-                sql.execute(text("select 1"))
-                logging.info("Conectado ao DW")
-            return conn
-        except (OperationalError, DBAPIError, SnowflakeDatabaseError) as e:
-            logging.info(f"Tentativa {attempt} falhou: {e}")
-            if attempt < retries:
-                time.sleep(delay)
-            else:
-                raise
+    logging.info("Conectado ao S3")
+
+    return s3
 
 
 # =============================
@@ -96,7 +93,7 @@ def init_logging(layer: str):
 
     logging.basicConfig(
         filename=log_file,
-        filemode="a",
+        filemode="w",
         level=logging.INFO,
         format="%(asctime)s - %(levelname)s - %(message)s",
         encoding="utf-8",
